@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" style="background:#1a1a2e">
+  <style>
+    .title { font: bold 16px sans-serif; fill: #00d9ff; }
+    .label { font: 12px sans-serif; fill: #eaeaea; }
+    .value { font: bold 11px sans-serif; fill: #eaeaea; }
+    .axis { stroke: #4a4a6a; stroke-width: 1; }
+  </style>
+  <text x="300" y="30" text-anchor="middle" class="title">Exact Lookup - Throughput (ops/sec)</text>
+  <line x1="60" y1="340" x2="540" y2="340" class="axis"/>
+  <rect x="120" y="303" width="80" height="37" fill="#00d9ff" rx="4"/>
+  <text x="160" y="360" text-anchor="middle" class="label">CompositeKey</text>
+  <text x="160" y="298" text-anchor="middle" class="value">202997</text>
+  <rect x="260" y="259" width="80" height="81" fill="#ff6b6b" rx="4"/>
+  <text x="300" y="360" text-anchor="middle" class="label">FullScan</text>
+  <text x="300" y="254" text-anchor="middle" class="value">440839</text>
+  <rect x="400" y="60" width="80" height="280" fill="#4ecdc4" rx="4"/>
+  <text x="440" y="360" text-anchor="middle" class="label">HashIndex</text>
+  <text x="440" y="55" text-anchor="middle" class="value">1530878</text>
+</svg>

@@ -1,0 +1,193 @@
+{
+  "timestamp": "2026-01-17T21:06:24.623641571+07:00",
+  "data_size": 5000,
+  "results": {
+    "exact_lookup": [
+      {
+        "name": "CompositeKey",
+        "operations": 1000,
+        "total_time_ns": 5562736,
+        "avg_latency_ns": 5522,
+        "p50_latency_ns": 4678,
+        "p95_latency_ns": 9929,
+        "p99_latency_ns": 22920,
+        "throughput_ops_per_sec": 179767.65390268384,
+        "memory_bytes": 0
+      },
+      {
+        "name": "FullScan",
+        "operations": 1000,
+        "total_time_ns": 1844874,
+        "avg_latency_ns": 1803,
+        "p50_latency_ns": 1748,
+        "p95_latency_ns": 3228,
+        "p99_latency_ns": 3628,
+        "throughput_ops_per_sec": 542042.4375865235,
+        "memory_bytes": 0
+      },
+      {
+        "name": "HashIndex",
+        "operations": 1000,
+        "total_time_ns": 530322,
+        "avg_latency_ns": 493,
+        "p50_latency_ns": 413,
+        "p95_latency_ns": 674,
+        "p99_latency_ns": 2037,
+        "throughput_ops_per_sec": 1885646.8334332728,
+        "memory_bytes": 0
+      }
+    ],
+    "prefix_scan": [
+      {
+        "name": "CompositeKey",
+        "operations": 1000,
+        "total_time_ns": 1767762539,
+        "avg_latency_ns": 1767623,
+        "p50_latency_ns": 1696622,
+        "p95_latency_ns": 2638422,
+        "p99_latency_ns": 3131968,
+        "throughput_ops_per_sec": 565.6868374220029,
+        "memory_bytes": 0
+      },
+      {
+        "name": "FullScan",
+        "operations": 1000,
+        "total_time_ns": 199160965,
+        "avg_latency_ns": 199088,
+        "p50_latency_ns": 198538,
+        "p95_latency_ns": 266885,
+        "p99_latency_ns": 315063,
+        "throughput_ops_per_sec": 5021.06424318641,
+        "memory_bytes": 0
+      },
+      {
+        "name": "HashIndex",
+        "operations": 1000,
+        "total_time_ns": 397889368,
+        "avg_latency_ns": 397818,
+        "p50_latency_ns": 395119,
+        "p95_latency_ns": 441257,
+        "p99_latency_ns": 487059,
+        "throughput_ops_per_sec": 2513.2614249697667,
+        "memory_bytes": 0
+      }
+    ],
+    "range_scan": [
+      {
+        "name": "CompositeKey",
+        "operations": 1000,
+        "total_time_ns": 1368278562,
+        "avg_latency_ns": 1368160,
+        "p50_latency_ns": 1285302,
+        "p95_latency_ns": 1977122,
+        "p99_latency_ns": 2600097,
+        "throughput_ops_per_sec": 730.8453320633113,
+        "memory_bytes": 0
+      },
+      {
+        "name": "FullScan",
+        "operations": 1000,
+        "total_time_ns": 222504245,
+        "avg_latency_ns": 222431,
+        "p50_latency_ns": 220426,
+        "p95_latency_ns": 236638,
+        "p99_latency_ns": 253605,
+        "throughput_ops_per_sec": 4494.296277358663,
+        "memory_bytes": 0
+      }
+    ],
+    "write": [
+      {
+        "name": "CompositeKey",
+        "operations": 1000,
+        "total_time_ns": 4206026,
+        "avg_latency_ns": 4153,
+        "p50_latency_ns": 3611,
+        "p95_latency_ns": 5230,
+        "p99_latency_ns": 9977,
+        "throughput_ops_per_sec": 237754.1175446847,
+        "memory_bytes": 0
+      },
+      {
+        "name": "FullScan",
+        "operations": 1000,
+        "total_time_ns": 85266,
+        "avg_latency_ns": 37,
+        "p50_latency_ns": 27,
+        "p95_latency_ns": 27,
+        "p99_latency_ns": 28,
+        "throughput_ops_per_sec": 11728004.128257452,
+        "memory_bytes": 0
+      },
+      {
+        "name": "HashIndex",
+        "operations": 1000,
+        "total_time_ns": 637674,
+        "avg_latency_ns": 590,
+        "p50_latency_ns": 544,
+        "p95_latency_ns": 814,
+        "p99_latency_ns": 1166,
+        "throughput_ops_per_sec": 1568199.424784451,
+        "memory_bytes": 0
+      }
+    ]
+  },
+  "comparisons": [
+    {
+      "operation": "write",
+      "method1": "CompositeKey",
+      "method2": "FullScan",
+      "speedup": 0.008909222248976644,
+      "method1_ops_per_sec": 237754.1175446847,
+      "method2_ops_per_sec": 11728004.128257452
+    },
+    {
+      "operation": "write",
+      "method1": "CompositeKey",
+      "method2": "HashIndex",
+      "speedup": 0.14206597640260052,
+      "method1_ops_per_sec": 237754.1175446847,
+      "method2_ops_per_sec": 1568199.424784451
+    },
+    {
+      "operation": "exact_lookup",
+      "method1": "CompositeKey",
+      "method2": "FullScan",
+      "speedup": 0.32651213328504164,
+      "method1_ops_per_sec": 179767.65390268384,
+      "method2_ops_per_sec": 542042.4375865235
+    },
+    {
+      "operation": "exact_lookup",
+      "method1": "CompositeKey",
+      "method2": "HashIndex",
+      "speedup": 0.08927924664976458,
+      "method1_ops_per_sec": 179767.65390268384,
+      "method2_ops_per_sec": 1885646.8334332728
+    },
+    {
+      "operation": "prefix_scan",
+      "method1": "CompositeKey",
+      "method2": "FullScan",
+      "speedup": 0.11263035160778061,
+      "method1_ops_per_sec": 565.6868374220029,
+      "method2_ops_per_sec": 5021.06424318641
+    },
+    {
+      "operation": "prefix_scan",
+      "method1": "CompositeKey",
+      "method2": "HashIndex",
+      "speedup": 0.22505817134083453,
+      "method1_ops_per_sec": 565.6868374220029,
+      "method2_ops_per_sec": 2513.2614249697667
+    },
+    {
+      "operation": "range_scan",
+      "method1": "CompositeKey",
+      "method2": "FullScan",
+      "speedup": 0.16257674540989359,
+      "method1_ops_per_sec": 730.8453320633113,
+      "method2_ops_per_sec": 4494.296277358663
+    }
+  ]
+}

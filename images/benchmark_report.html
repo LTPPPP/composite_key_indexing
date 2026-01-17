@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Composite Key Index Benchmark Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 40px; 
+            background: #1a1a2e;
+            color: #eaeaea;
+        }
+        h1 { color: #00d9ff; border-bottom: 2px solid #00d9ff; padding-bottom: 10px; }
+        h2 { color: #ff6b6b; margin-top: 40px; }
+        h3 { color: #4ecdc4; }
+        .chart-container { 
+            background: #16213e; 
+            border-radius: 10px; 
+            padding: 20px; 
+            margin: 20px 0; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .chart-row { display: flex; flex-wrap: wrap; gap: 20px; }
+        .chart-box { flex: 1; min-width: 400px; }
+        table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            margin: 20px 0; 
+            background: #16213e;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td { 
+            padding: 12px 15px; 
+            text-align: left; 
+            border-bottom: 1px solid #2a2a4a;
+        }
+        th { 
+            background: #0f3460; 
+            color: #00d9ff;
+            font-weight: 600;
+        }
+        tr:hover { background: #1f4068; }
+        .speedup-positive { color: #4ecdc4; font-weight: bold; }
+        .speedup-negative { color: #ff6b6b; font-weight: bold; }
+        .summary-box {
+            background: linear-gradient(135deg, #0f3460, #16213e);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #00d9ff;
+        }
+        .metric { 
+            display: inline-block; 
+            margin: 10px 20px 10px 0;
+            padding: 10px 20px;
+            background: #1a1a2e;
+            border-radius: 5px;
+        }
+        .metric-value { font-size: 24px; color: #00d9ff; font-weight: bold; }
+        .metric-label { font-size: 12px; color: #888; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Composite Key Index Benchmark Results</h1>
+    <p>Generated: 2026-01-17 21:06:38</p>
+
+    <div class="summary-box">
+        <h3>📊 Summary (10000 records)</h3>
+        <div>
+            <div class="metric">
+                <div class="metric-value">0.0x</div>
+                <div class="metric-label">CompositeKey vs FullScan (write)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">0.1x</div>
+                <div class="metric-label">CompositeKey vs HashIndex (write)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">0.5x</div>
+                <div class="metric-label">CompositeKey vs FullScan (exact_lookup)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">0.1x</div>
+                <div class="metric-label">CompositeKey vs HashIndex (exact_lookup)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">0.1x</div>
+                <div class="metric-label">CompositeKey vs FullScan (prefix_scan)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">0.3x</div>
+                <div class="metric-label">CompositeKey vs HashIndex (prefix_scan)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">0.1x</div>
+                <div class="metric-label">CompositeKey vs FullScan (range_scan)</div>
+            </div>
+        </div>
+    </div>
+    <h2>📈 Write Operations</h2>
+    <div class="chart-container">
+        <div class="chart-row">
+            <div class="chart-box">
+                <canvas id="chart_write_throughput"></canvas>
+            </div>
+            <div class="chart-box">
+                <canvas id="chart_write_latency"></canvas>
+            </div>
+        </div>
+    </div>
+    <h2>📈 Exact Lookup</h2>
+    <div class="chart-container">
+        <div class="chart-row">
+            <div class="chart-box">
+                <canvas id="chart_exact_lookup_throughput"></canvas>
+            </div>
+            <div class="chart-box">
+                <canvas id="chart_exact_lookup_latency"></canvas>
+            </div>
+        </div>
+    </div>
+    <h2>📈 Prefix Scan</h2>
+    <div class="chart-container">
+        <div class="chart-row">
+            <div class="chart-box">
+                <canvas id="chart_prefix_scan_throughput"></canvas>
+            </div>
+            <div class="chart-box">
+                <canvas id="chart_prefix_scan_latency"></canvas>
+            </div>
+        </div>
+    </div>
+    <h2>📈 Range Scan</h2>
+    <div class="chart-container">
+        <div class="chart-row">
+            <div class="chart-box">
+                <canvas id="chart_range_scan_throughput"></canvas>
+            </div>
+            <div class="chart-box">
+                <canvas id="chart_range_scan_latency"></canvas>
+            </div>
+        </div>
+    </div>
+    <h2>📋 Detailed Comparisons</h2>
+    <h3>Data Size: 1000 records</h3>
+    <table>
+        <tr>
+            <th>Operation</th>
+            <th>Method</th>
+            <th>Throughput (ops/s)</th>
+            <th>Avg Latency</th>
+            <th>P99 Latency</th>
+        </tr>
+        <tr>
+            <td>write</td>
+            <td>CompositeKey</td>
+            <td>193285</td>
+            <td>5.123µs</td>
+            <td>23.134µs</td>
+        </tr>
+        <tr>
+            <td>write</td>
+            <td>FullScan</td>
+            <td>11409273</td>
+            <td>41ns</td>
+            <td>28ns</td>
+        </tr>
+        <tr>
+            <td>write</td>
+            <td>HashIndex</td>
+            <td>1538871</td>
+            <td>598ns</td>
+            <td>1.535µs</td>
+        </tr>
+        <tr>
+            <td>exact_lookup</td>
+            <td>CompositeKey</td>
+            <td>167698</td>
+            <td>5.913µs</td>
+            <td>19.224µs</td>
+        </tr>
+        <tr>
+            <td>exact_lookup</td>
+            <td>FullScan</td>
+            <td>378914</td>
+            <td>2.588µs</td>
+            <td>5.981µs</td>
+        </tr>
+        <tr>
+            <td>exact_lookup</td>
+            <td>HashIndex</td>
+            <td>1468860</td>
+            <td>634ns</td>
+            <td>2.41µs</td>
+        </tr>
+        <tr>
+            <td>prefix_scan</td>
+            <td>CompositeKey</td>
+            <td>1854</td>
+            <td>539.178µs</td>
+            <td>1.089336ms</td>
+        </tr>
+        <tr>
+            <td>prefix_scan</td>
+            <td>FullScan</td>
+            <td>25936</td>
+            <td>38.513µs</td>
+            <td>72.47µs</td>
+        </tr>
+        <tr>
+            <td>prefix_scan</td>
+            <td>HashIndex</td>
+            <td>17419</td>
+            <td>57.362µs</td>
+            <td>87.001µs</td>
+        </tr>
+        <tr>
+            <td>range_scan</td>
+            <td>CompositeKey</td>
+            <td>3569</td>
+            <td>280.117µs</td>
+            <td>670.965µs</td>
+        </tr>
+        <tr>
+            <td>range_scan</td>
+            <td>FullScan</td>
+            <td>12063</td>
+            <td>82.848µs</td>
+            <td>122.204µs</td>
+        </tr>
+    </table>
+    <h3>Data Size: 5000 records</h3>
+    <table>
+        <tr>
+            <th>Operation</th>
+            <th>Method</th>
+            <th>Throughput (ops/s)</th>
+            <th>Avg Latency</th>
+            <th>P99 Latency</th>
+        </tr>
+        <tr>
+            <td>write</td>
+            <td>CompositeKey</td>
+            <td>237754</td>
+            <td>4.153µs</td>
+            <td>9.977µs</td>
+        </tr>
+        <tr>
+            <td>write</td>
+            <td>FullScan</td>
+            <td>11728004</td>
+            <td>37ns</td>
+            <td>28ns</td>
+        </tr>
+        <tr>
+            <td>write</td>
+            <td>HashIndex</td>
+            <td>1568199</td>
+            <td>590ns</td>
+            <td>1.166µs</td>
+        </tr>
+        <tr>
+            <td>exact_lookup</td>
+            <td>CompositeKey</td>
+            <td>179768</td>
+            <td>5.522µs</td>
+            <td>22.92µs</td>
+        </tr>
+        <tr>
+            <td>exact_lookup</td>
+            <td>FullScan</td>
+            <td>542042</td>
+            <td>1.803µs</td>
+            <td>3.628µs</td>
+        </tr>
+        <tr>
+            <td>exact_lookup</td>
+            <td>HashIndex</td>
+            <td>1885647</td>
+            <td>493ns</td>
+            <td>2.037µs</td>
+        </tr>
+        <tr>
+            <td>prefix_scan</td>
+            <td>CompositeKey</td>
+            <td>566</td>
+            <td>1.767623ms</td>
+            <td>3.131968ms</td>
+        </tr>
+        <tr>
+            <td>prefix_scan</td>
+            <td>FullScan</td>
+            <td>5021</td>
+            <td>199.088µs</td>
+            <td>315.063µs</td>
+        </tr>
+        <tr>
+            <td>prefix_scan</td>
+            <td>HashIndex</td>
+            <td>2513</td>
+            <td>397.818µs</td>
+            <td>487.059µs</td>
+        </tr>
+        <tr>
+            <td>range_scan</td>
+            <td>CompositeKey</td>
+            <td>731</td>
+            <td>1.36816ms</td>
+            <td>2.600097ms</td>
+        </tr>
+        <tr>
+            <td>range_scan</td>
+            <td>FullScan</td>
+            <td>4494</td>
+            <td>222.431µs</td>
+            <td>253.605µs</td>
+        </tr>
+    </table>
+    <h3>Data Size: 10000 records</h3>
+    <table>
+        <tr>
+            <th>Operation</th>
+            <th>Method</th>
+            <th>Throughput (ops/s)</th>
+            <th>Avg Latency</th>
+            <th>P99 Latency</th>
+        </tr>
+        <tr>
+            <td>write</td>
+            <td>CompositeKey</td>
+            <td>212096</td>
+            <td>4.672µs</td>
+            <td>23.784µs</td>
+        </tr>
+        <tr>
+            <td>write</td>
+            <td>FullScan</td>
+            <td>15838322</td>
+            <td>26ns</td>
+            <td>32ns</td>
+        </tr>
+        <tr>
+            <td>write</td>
+            <td>HashIndex</td>
+            <td>1637484</td>
+            <td>573ns</td>
+            <td>1.299µs</td>
+        </tr>
+        <tr>
+            <td>exact_lookup</td>
+            <td>CompositeKey</td>
+            <td>202997</td>
+            <td>4.882µs</td>
+            <td>8.714µs</td>
+        </tr>
+        <tr>
+            <td>exact_lookup</td>
+            <td>FullScan</td>
+            <td>440839</td>
+            <td>2.223µs</td>
+            <td>4.312µs</td>
+        </tr>
+        <tr>
+            <td>exact_lookup</td>
+            <td>HashIndex</td>
+            <td>1530878</td>
+            <td>608ns</td>
+            <td>1.276µs</td>
+        </tr>
+        <tr>
+            <td>prefix_scan</td>
+            <td>CompositeKey</td>
+            <td>299</td>
+            <td>3.339601ms</td>
+            <td>5.601907ms</td>
+        </tr>
+        <tr>
+            <td>prefix_scan</td>
+            <td>FullScan</td>
+            <td>2149</td>
+            <td>465.218µs</td>
+            <td>532.585µs</td>
+        </tr>
+        <tr>
+            <td>prefix_scan</td>
+            <td>HashIndex</td>
+            <td>1037</td>
+            <td>964.425µs</td>
+            <td>1.788618ms</td>
+        </tr>
+        <tr>
+            <td>range_scan</td>
+            <td>CompositeKey</td>
+            <td>326</td>
+            <td>3.071176ms</td>
+            <td>5.165249ms</td>
+        </tr>
+        <tr>
+            <td>range_scan</td>
+            <td>FullScan</td>
+            <td>2515</td>
+            <td>397.535µs</td>
+            <td>459.539µs</td>
+        </tr>
+    </table>
+    <script>
+        const chartColors = {
+            'CompositeKey': 'rgba(0, 217, 255, 0.8)',
+            'FullScan': 'rgba(255, 107, 107, 0.8)',
+            'HashIndex': 'rgba(78, 205, 196, 0.8)'
+        };
+        
+        const dataSizes = [1000,5000,10000];
+
+        // write Throughput Chart
+        new Chart(document.getElementById('chart_write_throughput'), {
+            type: 'bar',
+            data: {
+                labels: dataSizes.map(s => s + ' records'),
+                datasets: [
+                    {
+                        label: 'CompositeKey',
+                        data: [193284.8587793172,237754.1175446847,212096.18477140908],
+                        backgroundColor: chartColors['CompositeKey']
+                    },
+                    {
+                        label: 'FullScan',
+                        data: [11409273.457466228,11728004.128257452,15838322.404890873],
+                        backgroundColor: chartColors['FullScan']
+                    },
+                    {
+                        label: 'HashIndex',
+                        data: [1538871.1149275117,1568199.424784451,1637483.9731256128],
+                        backgroundColor: chartColors['HashIndex']
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Write - Throughput (ops/sec)', color: '#eaeaea' },
+                    legend: { labels: { color: '#eaeaea' } }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    },
+                    x: { 
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    }
+                }
+            }
+        });
+        
+        // write Latency Chart
+        new Chart(document.getElementById('chart_write_latency'), {
+            type: 'line',
+            data: {
+                labels: dataSizes.map(s => s + ' records'),
+                datasets: [
+                    {
+                        label: 'CompositeKey',
+                        data: [5,4,4],
+                        borderColor: chartColors['CompositeKey'],
+                        backgroundColor: chartColors['CompositeKey'].replace('0.8', '0.2'),
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'FullScan',
+                        data: [0,0,0],
+                        borderColor: chartColors['FullScan'],
+                        backgroundColor: chartColors['FullScan'].replace('0.8', '0.2'),
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'HashIndex',
+                        data: [0,0,0],
+                        borderColor: chartColors['HashIndex'],
+                        backgroundColor: chartColors['HashIndex'].replace('0.8', '0.2'),
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Write - Avg Latency (μs)', color: '#eaeaea' },
+                    legend: { labels: { color: '#eaeaea' } }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    },
+                    x: { 
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    }
+                }
+            }
+        });
+
+        // exact_lookup Throughput Chart
+        new Chart(document.getElementById('chart_exact_lookup_throughput'), {
+            type: 'bar',
+            data: {
+                labels: dataSizes.map(s => s + ' records'),
+                datasets: [
+                    {
+                        label: 'CompositeKey',
+                        data: [167697.78444395104,179767.65390268384,202997.00721512263],
+                        backgroundColor: chartColors['CompositeKey']
+                    },
+                    {
+                        label: 'FullScan',
+                        data: [378914.47066785186,542042.4375865235,440839.1637986405],
+                        backgroundColor: chartColors['FullScan']
+                    },
+                    {
+                        label: 'HashIndex',
+                        data: [1468860.1645123386,1885646.8334332728,1530877.8053335783],
+                        backgroundColor: chartColors['HashIndex']
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Exact_lookup - Throughput (ops/sec)', color: '#eaeaea' },
+                    legend: { labels: { color: '#eaeaea' } }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    },
+                    x: { 
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    }
+                }
+            }
+        });
+        
+        // exact_lookup Latency Chart
+        new Chart(document.getElementById('chart_exact_lookup_latency'), {
+            type: 'line',
+            data: {
+                labels: dataSizes.map(s => s + ' records'),
+                datasets: [
+                    {
+                        label: 'CompositeKey',
+                        data: [5,5,4],
+                        borderColor: chartColors['CompositeKey'],
+                        backgroundColor: chartColors['CompositeKey'].replace('0.8', '0.2'),
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'FullScan',
+                        data: [2,1,2],
+                        borderColor: chartColors['FullScan'],
+                        backgroundColor: chartColors['FullScan'].replace('0.8', '0.2'),
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'HashIndex',
+                        data: [0,0,0],
+                        borderColor: chartColors['HashIndex'],
+                        backgroundColor: chartColors['HashIndex'].replace('0.8', '0.2'),
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Exact_lookup - Avg Latency (μs)', color: '#eaeaea' },
+                    legend: { labels: { color: '#eaeaea' } }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    },
+                    x: { 
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    }
+                }
+            }
+        });
+
+        // prefix_scan Throughput Chart
+        new Chart(document.getElementById('chart_prefix_scan_throughput'), {
+            type: 'bar',
+            data: {
+                labels: dataSizes.map(s => s + ' records'),
+                datasets: [
+                    {
+                        label: 'CompositeKey',
+                        data: [1854.3576212675016,565.6868374220029,299.4265216476831],
+                        backgroundColor: chartColors['CompositeKey']
+                    },
+                    {
+                        label: 'FullScan',
+                        data: [25936.426240058794,5021.06424318641,2149.072932595976],
+                        backgroundColor: chartColors['FullScan']
+                    },
+                    {
+                        label: 'HashIndex',
+                        data: [17418.81820425362,2513.2614249697667,1036.7947788010263],
+                        backgroundColor: chartColors['HashIndex']
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Prefix_scan - Throughput (ops/sec)', color: '#eaeaea' },
+                    legend: { labels: { color: '#eaeaea' } }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    },
+                    x: { 
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    }
+                }
+            }
+        });
+        
+        // prefix_scan Latency Chart
+        new Chart(document.getElementById('chart_prefix_scan_latency'), {
+            type: 'line',
+            data: {
+                labels: dataSizes.map(s => s + ' records'),
+                datasets: [
+                    {
+                        label: 'CompositeKey',
+                        data: [539,1767,3339],
+                        borderColor: chartColors['CompositeKey'],
+                        backgroundColor: chartColors['CompositeKey'].replace('0.8', '0.2'),
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'FullScan',
+                        data: [38,199,465],
+                        borderColor: chartColors['FullScan'],
+                        backgroundColor: chartColors['FullScan'].replace('0.8', '0.2'),
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'HashIndex',
+                        data: [57,397,964],
+                        borderColor: chartColors['HashIndex'],
+                        backgroundColor: chartColors['HashIndex'].replace('0.8', '0.2'),
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Prefix_scan - Avg Latency (μs)', color: '#eaeaea' },
+                    legend: { labels: { color: '#eaeaea' } }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    },
+                    x: { 
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    }
+                }
+            }
+        });
+
+        // range_scan Throughput Chart
+        new Chart(document.getElementById('chart_range_scan_throughput'), {
+            type: 'bar',
+            data: {
+                labels: dataSizes.map(s => s + ' records'),
+                datasets: [
+                    {
+                        label: 'CompositeKey',
+                        data: [3568.820401004794,730.8453320633113,325.5903981807905],
+                        backgroundColor: chartColors['CompositeKey']
+                    },
+                    {
+                        label: 'FullScan',
+                        data: [12062.640908231939,4494.296277358663,2514.9597539667184],
+                        backgroundColor: chartColors['FullScan']
+                    },
+                    {
+                        label: 'HashIndex',
+                        data: [0,0,0],
+                        backgroundColor: chartColors['HashIndex']
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Range_scan - Throughput (ops/sec)', color: '#eaeaea' },
+                    legend: { labels: { color: '#eaeaea' } }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    },
+                    x: { 
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    }
+                }
+            }
+        });
+        
+        // range_scan Latency Chart
+        new Chart(document.getElementById('chart_range_scan_latency'), {
+            type: 'line',
+            data: {
+                labels: dataSizes.map(s => s + ' records'),
+                datasets: [
+                    {
+                        label: 'CompositeKey',
+                        data: [280,1368,3071],
+                        borderColor: chartColors['CompositeKey'],
+                        backgroundColor: chartColors['CompositeKey'].replace('0.8', '0.2'),
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'FullScan',
+                        data: [82,222,397],
+                        borderColor: chartColors['FullScan'],
+                        backgroundColor: chartColors['FullScan'].replace('0.8', '0.2'),
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'HashIndex',
+                        data: [0,0,0],
+                        borderColor: chartColors['HashIndex'],
+                        backgroundColor: chartColors['HashIndex'].replace('0.8', '0.2'),
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Range_scan - Avg Latency (μs)', color: '#eaeaea' },
+                    legend: { labels: { color: '#eaeaea' } }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    },
+                    x: { 
+                        grid: { color: '#2a2a4a' },
+                        ticks: { color: '#eaeaea' }
+                    }
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>

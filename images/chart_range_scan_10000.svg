@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" style="background:#1a1a2e">
+  <style>
+    .title { font: bold 16px sans-serif; fill: #00d9ff; }
+    .label { font: 12px sans-serif; fill: #eaeaea; }
+    .value { font: bold 11px sans-serif; fill: #eaeaea; }
+    .axis { stroke: #4a4a6a; stroke-width: 1; }
+  </style>
+  <text x="300" y="30" text-anchor="middle" class="title">Range Scan - Throughput (ops/sec)</text>
+  <line x1="60" y1="340" x2="540" y2="340" class="axis"/>
+  <rect x="166" y="304" width="80" height="36" fill="#00d9ff" rx="4"/>
+  <text x="206" y="360" text-anchor="middle" class="label">CompositeKey</text>
+  <text x="206" y="299" text-anchor="middle" class="value">326</text>
+  <rect x="352" y="60" width="80" height="280" fill="#ff6b6b" rx="4"/>
+  <text x="392" y="360" text-anchor="middle" class="label">FullScan</text>
+  <text x="392" y="55" text-anchor="middle" class="value">2515</text>
+</svg>
