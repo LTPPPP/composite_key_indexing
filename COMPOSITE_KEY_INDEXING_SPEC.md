@@ -4,9 +4,9 @@
 
 ---
 
-## 1. ĐỊNH NGHĨA BÀI TOÁN
+## 1. PROBLEM DEFINITION
 
-### 1.1 Mô hình dữ liệu
+### 1.1 Data Model
 
 ```
 Record = {
@@ -18,63 +18,63 @@ Record = {
 }
 ```
 
-### 1.2 Các loại truy vấn cần hỗ trợ
+### 1.2 Supported Query Types
 
-| Query Type | Pattern | Ví dụ |
-|------------|---------|-------|
+| Query Type | Pattern | Example |
+|------------|---------|---------|
 | Exact Match | `A = x` | `user_id = "U001"` |
 | Prefix Match | `A = x AND B = y` | `user_id = "U001" AND category = "ORDER"` |
 | Range Query | `A = x AND B BETWEEN t1 AND t2` | `user_id = "U001" AND timestamp BETWEEN 1000 AND 2000` |
 
-### 1.3 Ràng buộc hệ thống
+### 1.3 System Constraints
 
-- **Không full scan**: O(n) scan không được phép
-- **Distributed-friendly**: Hỗ trợ sharding/partitioning
-- **Sorted KV-Store**: Dữ liệu được sắp xếp theo key (LSM-tree, B+tree)
-- **Byte-comparable**: Key phải so sánh được theo thứ tự byte
+- **No full scan**: O(n) scan is not allowed
+- **Distributed-friendly**: Support sharding/partitioning
+- **Sorted KV-Store**: Data is sorted by key (LSM-tree, B+tree)
+- **Byte-comparable**: Keys must be comparable in byte order
 
 ---
 
-## 2. CHIẾN LƯỢC THIẾT KẾ COMPOSITE KEY
+## 2. COMPOSITE KEY DESIGN STRATEGY
 
-### 2.1 Nguyên tắc xác định thứ tự field
+### 2.1 Field Ordering Principles
 
 ```
-RULE: Fields được sắp xếp theo thứ tự ưu tiên truy vấn, KHÔNG phải cardinality
+RULE: Fields are ordered by query priority, NOT by cardinality
 
 Priority Order:
-1. Equality fields (WHERE A = x) → đặt trước
-2. Range fields (WHERE B BETWEEN) → đặt sau equality
-3. High-selectivity fields → ưu tiên đặt trước trong cùng nhóm
+1. Equality fields (WHERE A = x) → place first
+2. Range fields (WHERE B BETWEEN) → place after equality
+3. High-selectivity fields → prioritize in same group
 ```
 
 ### 2.2 Cardinality Analysis Matrix
 
-| Cardinality | Định nghĩa | Vị trí khuyến nghị |
-|-------------|------------|-------------------|
-| High | > 10^6 unique values | Position 1-2 (filter sớm) |
+| Cardinality | Definition | Recommended Position |
+|-------------|------------|---------------------|
+| High | > 10^6 unique values | Position 1-2 (early filter) |
 | Medium | 10^3 - 10^6 | Position 2-3 |
-| Low | < 10^3 | Position cuối hoặc không index |
+| Low | < 10^3 | Last position or no index |
 
 ### 2.3 Prefix Scan vs Range Scan
 
 ```
 Composite Key: [A][B][C][D]
 
-✅ Prefix Scan hiệu quả:
+✅ Efficient Prefix Scan:
    - A = x                    → Scan prefix [A]
    - A = x AND B = y          → Scan prefix [A][B]
    - A = x AND B = y AND C = z → Scan prefix [A][B][C]
 
-✅ Range Scan hiệu quả:
+✅ Efficient Range Scan:
    - A = x AND B BETWEEN t1, t2 → Range [A][t1] to [A][t2]
 
-❌ Không hiệu quả (skip field):
-   - A = x AND C = z          → Phải scan toàn bộ [A][*]
-   - B = y                    → Full scan (không dùng được prefix)
+❌ Inefficient (skip field):
+   - A = x AND C = z          → Must scan entire [A][*]
+   - B = y                    → Full scan (cannot use prefix)
 ```
 
-### 2.4 Khi nào cần Multiple Composite Keys
+### 2.4 When Multiple Composite Keys Are Needed
 
 ```
 Scenario: Query patterns conflict
@@ -82,7 +82,7 @@ Scenario: Query patterns conflict
 Pattern 1: WHERE user_id = x AND timestamp BETWEEN t1, t2
 Pattern 2: WHERE category = y AND timestamp BETWEEN t1, t2
 
-Solution: Tạo 2 composite keys song song
+Solution: Create 2 parallel composite keys
   - Key1: [user_id][timestamp] → payload_ref
   - Key2: [category][timestamp] → payload_ref
   
@@ -91,9 +91,9 @@ Trade-off: Storage x2, Write x2, Read O(log n)
 
 ---
 
-## 3. THUẬT TOÁN CreateCompositeKey
+## 3. CreateCompositeKey ALGORITHM
 
-### 3.1 Pseudo-code chính
+### 3.1 Main Pseudo-code
 
 ```
 ALGORITHM CreateCompositeKey(fields: List[Field], config: Config) -> bytes:
@@ -134,10 +134,10 @@ ALGORITHM CreateCompositeKey(fields: List[Field], config: Config) -> bytes:
 
 ```
 DELIMITER_STRATEGIES = {
-    "NULL_BYTE":     0x00,    # ⚠️ Không dùng nếu value chứa null
-    "UNIT_SEPARATOR": 0x1F,   # ✅ ASCII control char, hiếm trong data
-    "HIGH_BYTE":     0xFF,    # ⚠️ Ảnh hưởng sort order
-    "DOUBLE_BYTE":   0x00_01, # ✅ An toàn hơn, tốn 2 bytes
+    "NULL_BYTE":     0x00,    # ⚠️ Don't use if value contains null
+    "UNIT_SEPARATOR": 0x1F,   # ✅ ASCII control char, rare in data
+    "HIGH_BYTE":     0xFF,    # ⚠️ Affects sort order
+    "DOUBLE_BYTE":   0x00_01, # ✅ Safer, costs 2 bytes
 }
 
 RECOMMENDED: 0x1F (Unit Separator)
@@ -154,7 +154,7 @@ ALGORITHM ComputeShardPrefix(value, shard_count: int) -> bytes:
 
 ---
 
-## 4. THUẬT TOÁN QUERY
+## 4. QUERY ALGORITHMS
 
 ### 4.1 Exact Lookup
 
@@ -215,7 +215,7 @@ ALGORITHM IncrementLastByte(key: bytes) -> bytes:
 
 ---
 
-## 5. TỐI ƯU NÂNG CAO
+## 5. ADVANCED OPTIMIZATIONS
 
 ### 5.1 Bloom Filter
 
@@ -251,7 +251,7 @@ Value Compression: LZ4 (hot), Zstd (cold)
 
 ---
 
-## 6. PHÂN TÍCH ĐỘ PHỨC TẠP
+## 6. COMPLEXITY ANALYSIS
 
 ### 6.1 Time Complexity
 
@@ -270,7 +270,7 @@ Value Compression: LZ4 (hot), Zstd (cold)
 | Bloom Filter | O(n × 10 bits) |
 | LRU Cache | O(cache_size) |
 
-### 6.3 So sánh
+### 6.3 Comparison
 
 | Criteria | Composite Key | B+Tree | Hash Index |
 |----------|:-------------:|:------:|:----------:|
@@ -282,7 +282,7 @@ Value Compression: LZ4 (hot), Zstd (cold)
 
 ---
 
-## 7. VÍ DỤ THỰC TẾ
+## 7. PRACTICAL EXAMPLES
 
 ### 7.1 Schema: Order Management
 
